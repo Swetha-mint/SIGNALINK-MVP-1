@@ -34,6 +34,40 @@ const pauseButton = document.getElementById("pauseButton");
 const resumeButton = document.getElementById("resumeButton");
 const stopButton = document.getElementById("stopButton");
 const speechStatusEl = document.getElementById("speechStatus");
+const offlineBadge = document.getElementById("offlineBadge");
+
+function updateOfflineStatus() {
+  if (!offlineBadge) return;
+
+  if (!navigator.onLine) {
+    offlineBadge.textContent = "OFFLINE MODE: LOCAL APP";
+  } else if (navigator.serviceWorker?.controller) {
+    offlineBadge.textContent = "OFFLINE READY";
+  } else {
+    offlineBadge.textContent = "ONLINE: INSTALLING OFFLINE CACHE…";
+  }
+}
+
+async function registerOfflineApp() {
+  updateOfflineStatus();
+
+  if (!("serviceWorker" in navigator)) {
+    if (offlineBadge) offlineBadge.textContent = "OFFLINE PWA NOT SUPPORTED";
+    return;
+  }
+
+  try {
+    await navigator.serviceWorker.register("./sw.js");
+    updateOfflineStatus();
+  } catch (error) {
+    console.error("Service Worker registration failed:", error);
+    if (offlineBadge) offlineBadge.textContent = "OFFLINE CACHE FAILED";
+  }
+}
+
+window.addEventListener("online", updateOfflineStatus);
+window.addEventListener("offline", updateOfflineStatus);
+navigator.serviceWorker?.addEventListener("controllerchange", updateOfflineStatus);
 
 
 function getCommunicationOutput(sequence) {
@@ -484,6 +518,8 @@ function predict() {
 
   requestAnimationFrame(predict);
 }
+
+registerOfflineApp();
 
 startButton.addEventListener("click", startCamera);
 initializeTemporalControls();
