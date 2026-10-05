@@ -58,3 +58,19 @@ footer{display:flex;justify-content:space-between;gap:16px;margin-top:22px;color
   .gesture-guide div:last-child{border-bottom:0}
   footer{flex-direction:column}
 }
+/* MVP-1.5 temporal integration */
+.temporal-card{margin-top:16px}
+.sequence-label{margin-top:20px;color:var(--orange);font-size:11px;font-weight:900;letter-spacing:.14em}
+.buffer{min-height:58px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.token{border:2px solid var(--orange);padding:9px 12px;font-weight:900}
+.empty{opacity:.55}
+.sequence{margin-top:8px;font-size:clamp(26px,5vw,44px);font-weight:900}
+.speech-controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.speech-controls button{min-width:120px}
+.speech-controls button:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.speech-controls .speak-button{background:var(--orange)}
+.temporal-note{margin-top:12px;padding:12px 14px;border-left:4px solid var(--orange);background:var(--white);font-size:13px}
+@media(max-width:640px){
+  .speech-controls{display:grid;grid-template-columns:1fr 1fr}
+  .speech-controls button{width:100%}
+}
