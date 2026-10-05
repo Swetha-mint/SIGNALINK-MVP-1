@@ -7,6 +7,7 @@ const video = document.getElementById("camera");
 const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 const retryButton = document.getElementById("retryButton");
+const startButton = document.getElementById("startButton");
 const placeholder = document.getElementById("cameraPlaceholder");
 const statusTitle = document.getElementById("statusTitle");
 const statusText = document.getElementById("statusText");
@@ -123,6 +124,7 @@ async function loadHandTracking() {
 
 async function startCamera() {
   retryButton.hidden = true;
+  startButton.hidden = true;
 
   try {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -134,11 +136,7 @@ async function startCamera() {
     if (stream) stopCamera();
 
     stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "user",
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
+      video: true,
       audio: false
     });
 
@@ -167,6 +165,7 @@ async function startCamera() {
     stopCamera();
     placeholder.hidden = false;
     retryButton.hidden = false;
+    startButton.hidden = false;
 
     const message =
       error?.name === "NotAllowedError"
@@ -228,7 +227,8 @@ function predict() {
   requestAnimationFrame(predict);
 }
 
+startButton.addEventListener("click", startCamera);
 retryButton.addEventListener("click", startCamera);
 window.addEventListener("beforeunload", stopCamera);
 
-startCamera();
+setStatus("Camera access required", "Click Allow Camera & Start to begin MVP-1.");
