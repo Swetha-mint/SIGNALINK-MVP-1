@@ -5,9 +5,14 @@ let predictionStarted = false;
 
 const MAX_BUFFER_SIZE = 3;
 const gestureBuffer = [];
-let lastGesture = null;
-let invalidGestureFrames = 0;
-const INVALID_GESTURE_RESET_FRAMES = 8;
+
+const CONFIRM_FRAMES = 5;
+const NO_HAND_RESET_FRAMES = 8;
+
+let candidateGesture = null;
+let candidateFrames = 0;
+let activeGesture = null;
+let noHandFrames = 0;
 let speechState = "idle";
 
 const video = document.getElementById("camera");
@@ -55,9 +60,6 @@ function getCommunicationOutput(sequence) {
 }
 
 function addGesture(gesture) {
-  if (gesture === lastGesture) return;
-
-  lastGesture = gesture;
   gestureBuffer.push(gesture);
 
   if (gestureBuffer.length > MAX_BUFFER_SIZE) {
@@ -67,21 +69,53 @@ function addGesture(gesture) {
   renderTemporalLogic();
 }
 
-function resetGestureState() {
-  invalidGestureFrames += 1;
+function processGestureObservation(gesture) {
+  if (!gesture) {
+    noHandFrames += 1;
+    candidateGesture = null;
+    candidateFrames = 0;
 
-  // Do not reset on a single noisy frame. MediaPipe can briefly return
-  // "no classification" while the same gesture is still being held.
-  if (invalidGestureFrames >= INVALID_GESTURE_RESET_FRAMES) {
-    lastGesture = null;
-    invalidGestureFrames = 0;
+    // Only end the active event after a real gap, so a brief MediaPipe
+    // detection drop does not erase or duplicate the previous event.
+    if (noHandFrames >= NO_HAND_RESET_FRAMES) {
+      activeGesture = null;
+      noHandFrames = 0;
+    }
+    return;
+  }
+
+  noHandFrames = 0;
+  const observedGesture = gesture.text;
+
+  // Holding the same gesture does not create another event.
+  if (observedGesture === activeGesture) {
+    candidateGesture = null;
+    candidateFrames = 0;
+    return;
+  }
+
+  // Require a stable new gesture before committing it to the temporal buffer.
+  if (observedGesture === candidateGesture) {
+    candidateFrames += 1;
+  } else {
+    candidateGesture = observedGesture;
+    candidateFrames = 1;
+  }
+
+  if (candidateFrames >= CONFIRM_FRAMES) {
+    activeGesture = candidateGesture;
+    addGesture(activeGesture);
+    candidateGesture = null;
+    candidateFrames = 0;
   }
 }
 
 function clearTemporalBuffer() {
   gestureBuffer.length = 0;
-  lastGesture = null;
-  invalidGestureFrames = 0;
+  candidateGesture = null;
+  candidateFrames = 0;
+  activeGesture = null;
+  noHandFrames = 0;
   renderTemporalLogic();
 }
 
@@ -434,12 +468,11 @@ function predict() {
       const gesture = result.landmarks?.[0] ? classifyGesture(result.landmarks[0]) : null;
 
       if (gesture) {
-        invalidGestureFrames = 0;
         output.textContent = gesture.text;
-        confidence.textContent = "Gesture recognized → temporal event";
-        addGesture(gesture.text);
+        confidence.textContent = "Gesture detected — confirming event…";
+        processGestureObservation(gesture);
       } else {
-        resetGestureState();
+        processGestureObservation(null);
         confidence.textContent = result.landmarks?.length
           ? "Hand detected — show one of the three supported gestures."
           : "Waiting for a hand…";
