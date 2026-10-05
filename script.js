@@ -57,7 +57,7 @@ function drawHands(result) {
 async function createHandLandmarker() {
   let module;
   try {
-    module = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
+    module = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/+esm");
   } catch (error) {
     throw new Error(`MediaPipe JavaScript module failed to load: ${error?.name || "Error"}: ${error?.message || String(error)}`);
   }
@@ -67,7 +67,7 @@ async function createHandLandmarker() {
   let vision;
   try {
     vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm"
     );
   } catch (error) {
     throw new Error(`MediaPipe WASM failed to load: ${error?.name || "Error"}: ${error?.message || String(error)}`);
