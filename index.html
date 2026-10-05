@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#111111">
   <title>SIGNALINK — MVP-1</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20261005-2">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,6 +28,7 @@
     </section>
 
     <section class="status-card" aria-live="polite">
+      <div class="offline-badge" id="offlineBadge">OFFLINE MODE: CHECKING…</div>
       <div class="status-dot" id="statusDot"></div>
       <div>
         <strong id="statusTitle">Camera access required</strong>
@@ -84,6 +86,6 @@
       <span>Camera-only prototype · No microphone</span>
     </footer>
   </main>
-  <script src="script.js?v=20261005-6" defer></script>
+  <script src="script.js?v=20261005-7" defer></script>
 </body>
 </html>
