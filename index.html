@@ -45,9 +45,29 @@
     </section>
 
     <section class="output-card" aria-live="polite">
-      <p class="eyebrow">COMMUNICATION OUTPUT</p>
+      <p class="eyebrow">CURRENT GESTURE</p>
       <div class="output" id="output">—</div>
       <p class="confidence" id="confidence">Waiting for a gesture…</p>
+    </section>
+
+    <section class="output-card temporal-card" aria-live="polite">
+      <p class="eyebrow">MVP-1.5 → TEMPORAL BUFFER</p>
+      <div id="buffer" class="buffer"><span class="empty">[ empty ]</span></div>
+      <div class="sequence-label">COMMUNICATION</div>
+      <div id="sequence" class="sequence">Waiting for gesture events…</div>
+      <p id="eventCount" class="confidence">0 events in buffer</p>
+
+      <div class="speech-controls">
+        <button id="speakButton" class="speak-button" type="button">🔊 SPEAK</button>
+        <button id="pauseButton" class="secondary" type="button" disabled>⏸ PAUSE</button>
+        <button id="resumeButton" class="secondary" type="button" disabled>▶ RESUME</button>
+        <button id="stopButton" class="secondary" type="button" disabled>⏹ STOP</button>
+      </div>
+      <p id="speechStatus" class="confidence" aria-live="polite">Speech ready.</p>
+    </section>
+
+    <section class="temporal-note">
+      <strong>Bridge active:</strong> MediaPipe gesture events are now passed into SIGNALINK's temporal logic.
     </section>
 
     <section class="gesture-guide">
@@ -61,6 +81,6 @@
       <span>Camera-only prototype · No microphone</span>
     </footer>
   </main>
-  <script src="script.js" defer></script>
+  <script src="script.js?v=20261005-5" defer></script>
 </body>
 </html>
