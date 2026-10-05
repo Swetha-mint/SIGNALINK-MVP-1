@@ -27,22 +27,16 @@ function distance(a, b) {
 
 function classifyGesture(lm) {
   const wrist = lm[0];
-
   const indexExtended = distance(lm[8], wrist) > distance(lm[6], wrist) * 1.18;
   const middleExtended = distance(lm[12], wrist) > distance(lm[10], wrist) * 1.18;
   const ringExtended = distance(lm[16], wrist) > distance(lm[14], wrist) * 1.18;
   const pinkyExtended = distance(lm[20], wrist) > distance(lm[18], wrist) * 1.18;
-
-  const thumbExtended =
-    distance(lm[4], lm[5]) > distance(lm[3], lm[5]) * 1.12;
-
-  const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended]
-    .filter(Boolean).length;
+  const thumbExtended = distance(lm[4], lm[5]) > distance(lm[3], lm[5]) * 1.12;
+  const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
 
   if (extendedCount === 0 && !thumbExtended) return { text: "STOP" };
   if (thumbExtended && extendedCount <= 1 && lm[4].y < lm[3].y) return { text: "YES" };
   if (extendedCount === 4 && thumbExtended) return { text: "HELLO" };
-
   return null;
 }
 
@@ -54,31 +48,36 @@ function drawHands(result) {
   for (const hand of result.landmarks) {
     for (const point of hand) {
       ctx.beginPath();
-      ctx.arc(
-        point.x * canvas.width,
-        point.y * canvas.height,
-        4,
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, 4, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 }
 
 async function createHandLandmarker() {
-  const { FilesetResolver, HandLandmarker } =
-    await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
+  let module;
+  try {
+    module = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
+  } catch (error) {
+    throw new Error(`MediaPipe JavaScript module failed to load: ${error?.name || "Error"}: ${error?.message || String(error)}`);
+  }
 
-  const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
-  );
+  const { FilesetResolver, HandLandmarker } = module;
+
+  let vision;
+  try {
+    vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+    );
+  } catch (error) {
+    throw new Error(`MediaPipe WASM failed to load: ${error?.name || "Error"}: ${error?.message || String(error)}`);
+  }
+
+  const modelAssetPath =
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
   const options = {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
-    },
+    baseOptions: { modelAssetPath },
     runningMode: "VIDEO",
     numHands: 1
   };
@@ -89,36 +88,30 @@ async function createHandLandmarker() {
       baseOptions: { ...options.baseOptions, delegate: "GPU" }
     });
   } catch (gpuError) {
-    console.warn("GPU hand tracking unavailable; using CPU.", gpuError);
-    return await HandLandmarker.createFromOptions(vision, {
-      ...options,
-      baseOptions: { ...options.baseOptions, delegate: "CPU" }
-    });
+    console.warn("GPU hand tracking unavailable; trying CPU.", gpuError);
+
+    try {
+      return await HandLandmarker.createFromOptions(vision, {
+        ...options,
+        baseOptions: { ...options.baseOptions, delegate: "CPU" }
+      });
+    } catch (cpuError) {
+      throw new Error(`MediaPipe hand model failed to initialize. GPU: ${gpuError?.message || String(gpuError)} | CPU: ${cpuError?.message || String(cpuError)}`);
+    }
   }
 }
 
 async function loadHandTracking() {
-  setStatus(
-    "Loading hand tracking…",
-    "Camera is working. Loading the gesture model.",
-    true
-  );
+  setStatus("Loading hand tracking…", "Camera is working. Loading MediaPipe.", true);
 
   try {
     handLandmarker = await createHandLandmarker();
-    setStatus(
-      "SIGNALINK is ready",
-      "Show ✋ HELLO, ✊ STOP, or 👍 YES.",
-      true
-    );
+    setStatus("SIGNALINK is ready", "Show ✋ HELLO, ✊ STOP, or 👍 YES.", true);
     startPredictionLoop();
   } catch (error) {
     console.error("Hand tracking failed:", error);
-    setStatus(
-      "Camera is working",
-      "Hand tracking could not load. Check the browser connection and reload."
-    );
-    confidence.textContent = "Camera is active; gesture model unavailable.";
+    setStatus("MediaPipe load failed", error?.message || String(error));
+    confidence.textContent = "Camera is active. The exact MediaPipe failure is shown above.";
   }
 }
 
@@ -135,29 +128,17 @@ async function startCamera() {
 
     if (stream) stopCamera();
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: false
-    });
-
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     video.srcObject = stream;
     await video.play();
 
     placeholder.hidden = true;
-    setStatus(
-      "Camera ready",
-      "Camera is working. Loading gesture recognition.",
-      true
-    );
+    setStatus("Camera ready", "Camera is working. Loading MediaPipe.", true);
 
     if (!handLandmarker) {
       await loadHandTracking();
     } else {
-      setStatus(
-        "SIGNALINK is ready",
-        "Show ✋ HELLO, ✊ STOP, or 👍 YES.",
-        true
-      );
+      setStatus("SIGNALINK is ready", "Show ✋ HELLO, ✊ STOP, or 👍 YES.", true);
       startPredictionLoop();
     }
   } catch (error) {
@@ -207,9 +188,7 @@ function predict() {
       const result = handLandmarker.detectForVideo(video, performance.now());
       drawHands(result);
 
-      const gesture = result.landmarks?.[0]
-        ? classifyGesture(result.landmarks[0])
-        : null;
+      const gesture = result.landmarks?.[0] ? classifyGesture(result.landmarks[0]) : null;
 
       if (gesture) {
         output.textContent = gesture.text;
