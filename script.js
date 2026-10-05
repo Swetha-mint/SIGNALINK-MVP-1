@@ -6,6 +6,8 @@ let predictionStarted = false;
 const MAX_BUFFER_SIZE = 3;
 const gestureBuffer = [];
 let lastGesture = null;
+let invalidGestureFrames = 0;
+const INVALID_GESTURE_RESET_FRAMES = 8;
 let speechState = "idle";
 
 const video = document.getElementById("camera");
@@ -66,7 +68,14 @@ function addGesture(gesture) {
 }
 
 function resetGestureState() {
-  lastGesture = null;
+  invalidGestureFrames += 1;
+
+  // Do not reset on a single noisy frame. MediaPipe can briefly return
+  // "no classification" while the same gesture is still being held.
+  if (invalidGestureFrames >= INVALID_GESTURE_RESET_FRAMES) {
+    lastGesture = null;
+    invalidGestureFrames = 0;
+  }
 }
 
 function clearTemporalBuffer() {
@@ -413,6 +422,7 @@ function predict() {
       const gesture = result.landmarks?.[0] ? classifyGesture(result.landmarks[0]) : null;
 
       if (gesture) {
+        invalidGestureFrames = 0;
         output.textContent = gesture.text;
         confidence.textContent = "Gesture recognized → temporal event";
         addGesture(gesture.text);
