@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SIGNALINK MVP-1 — browser-based assistive communication proof of concept.">
+  <title>SIGNALINK — MVP-1</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div>
+        <h1>SIGNALINK</h1>
+        <p>Sense. Process. Communicate. Assist.</p>
+      </div>
+      <span class="mvp-tag">MVP-1</span>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">ACCESS → INPUT → PROCESS → OUTPUT</p>
+      <h2>A small communication bridge.</h2>
+      <p>Allow camera access, show one supported hand gesture, and SIGNALINK will convert it into a communication output.</p>
+    </section>
+
+    <section class="status-card" aria-live="polite">
+      <div class="status-dot" id="statusDot"></div>
+      <div>
+        <strong id="statusTitle">Camera access required</strong>
+        <p id="statusText">Allow camera access to start MVP-1.</p>
+      </div>
+    </section>
+
+    <section class="camera-panel">
+      <div class="camera-frame">
+        <video id="camera" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div class="camera-placeholder" id="cameraPlaceholder">Camera feed will appear here.</div>
+      </div>
+      <div class="controls">
+        <button id="retryButton" type="button" hidden>Try Camera Again</button>
+      </div>
+    </section>
+
+    <section class="output-card" aria-live="polite">
+      <p class="eyebrow">COMMUNICATION OUTPUT</p>
+      <div class="output" id="output">—</div>
+      <p class="confidence" id="confidence">Waiting for a gesture…</p>
+    </section>
+
+    <section class="gesture-guide">
+      <div><span>✋</span><strong>HELLO</strong><small>Open hand</small></div>
+      <div><span>✊</span><strong>STOP</strong><small>Closed fist</small></div>
+      <div><span>👍</span><strong>YES</strong><small>Thumb up</small></div>
+    </section>
+
+    <footer>
+      <span>SIGNALINK MVP-1</span>
+      <span>Camera-only prototype · No microphone</span>
+    </footer>
+  </main>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
