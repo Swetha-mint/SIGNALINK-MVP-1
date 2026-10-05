@@ -81,6 +81,7 @@ function resetGestureState() {
 function clearTemporalBuffer() {
   gestureBuffer.length = 0;
   lastGesture = null;
+  invalidGestureFrames = 0;
   renderTemporalLogic();
 }
 
@@ -208,7 +209,9 @@ function speakCurrentMessage() {
 }
 
 function initializeTemporalControls() {
-  document.getElementById("clearButton").addEventListener("click", clearTemporalBuffer);
+  const clearButton = document.getElementById("clearButton");
+  if (clearButton) clearButton.addEventListener("click", clearTemporalBuffer);
+
   speakButton.addEventListener("click", speakCurrentMessage);
 
   pauseButton.addEventListener("click", () => {
@@ -266,7 +269,16 @@ function classifyGesture(lm) {
   const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
 
   if (extendedCount === 0 && !thumbExtended) return { text: "STOP" };
-  if (thumbExtended && extendedCount <= 1 && lm[4].y < lm[3].y) return { text: "YES" };
+
+  // YES requires a clearly upward thumb, not merely an extended thumb.
+  // This rejects common sideways-thumb false positives.
+  const thumbUp =
+    thumbExtended &&
+    lm[4].y < lm[3].y &&
+    lm[4].y < lm[2].y &&
+    Math.abs(lm[4].x - lm[2].x) < 0.35;
+
+  if (thumbUp && extendedCount <= 1) return { text: "YES" };
   if (extendedCount === 4 && thumbExtended) return { text: "HELLO" };
   return null;
 }
