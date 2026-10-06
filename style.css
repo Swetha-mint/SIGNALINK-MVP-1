@@ -89,3 +89,13 @@ footer{display:flex;justify-content:space-between;gap:16px;margin-top:22px;color
   font-weight: 700;
   letter-spacing: 0.05em;
 }
+
+.camera-panel .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 0}
+.controls .secondary{background:var(--white);color:var(--ink);border:1px solid var(--line)}
+.landmark-card{margin-top:16px}
+.landmark-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.landmark-stats div{border:1px solid var(--line);padding:14px}
+.landmark-stats strong{display:block;font-size:24px}
+.landmark-stats small{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.12em}
+.matrix-label{margin-top:18px;color:var(--orange);font-size:11px;font-weight:900;letter-spacing:.14em}
+.landmark-matrix{margin:8px 0 0;padding:14px;overflow:auto;background:var(--black);color:var(--white);font:700 14px/1.7 monospace}
