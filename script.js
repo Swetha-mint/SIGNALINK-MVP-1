@@ -20,6 +20,7 @@ const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 const retryButton = document.getElementById("retryButton");
 const startButton = document.getElementById("startButton");
+const stopCameraButton = document.getElementById("stopCameraButton");
 const placeholder = document.getElementById("cameraPlaceholder");
 const statusTitle = document.getElementById("statusTitle");
 const statusText = document.getElementById("statusText");
@@ -35,6 +36,10 @@ const resumeButton = document.getElementById("resumeButton");
 const stopButton = document.getElementById("stopButton");
 const speechStatusEl = document.getElementById("speechStatus");
 const offlineBadge = document.getElementById("offlineBadge");
+const landmarkCountEl = document.getElementById("landmarkCount");
+const bitCountEl = document.getElementById("bitCount");
+const landmarkMatrixEl = document.getElementById("landmarkMatrix");
+const landmarkStatusEl = document.getElementById("landmarkStatus");
 
 function updateOfflineStatus() {
   if (!offlineBadge) return;
@@ -327,6 +332,68 @@ function distance(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+function normalizeLandmarks(landmarks) {
+  const wrist = landmarks[0];
+  const points = landmarks.map(p => ({
+    x: p.x - wrist.x,
+    y: p.y - wrist.y,
+    z: p.z - wrist.z
+  }));
+  const scale = Math.max(...points.map(p => Math.hypot(p.x, p.y, p.z))) || 1;
+  return points.map(p => ({x:p.x/scale, y:p.y/scale, z:p.z/scale}));
+}
+
+function getRepresentativePoints(normalized) {
+  const ids = [0,4,8,12,16,20];
+  const selected = ids.map(i => normalized[i]);
+  const palm = [5,9,13,17].reduce(
+    (acc,i) => ({
+      x:acc.x + normalized[i].x/4,
+      y:acc.y + normalized[i].y/4,
+      z:acc.z + normalized[i].z/4
+    }),
+    {x:0,y:0,z:0}
+  );
+  selected.push(palm);
+  return selected;
+}
+
+function quantize7(value) {
+  return Math.max(0, Math.min(127, Math.round((value + 1) * 63.5)));
+}
+
+function renderLandmarkRepresentation(landmarks) {
+  if (!landmarks) {
+    landmarkCountEl.textContent = "0 / 21";
+    bitCountEl.textContent = "0 / 147";
+    landmarkMatrixEl.textContent = "Waiting for hand landmarks…";
+    landmarkStatusEl.textContent = "2A representation inactive until a hand is detected.";
+    return;
+  }
+
+  const normalized = normalizeLandmarks(landmarks);
+  const points = getRepresentativePoints(normalized);
+  const matrix = [
+    points.map(p => quantize7(p.x)),
+    points.map(p => quantize7(p.y)),
+    points.map(p => quantize7(p.z))
+  ];
+
+  const bits = matrix.flat().map(v => v.toString(2).padStart(7,"0")).join("");
+  const transformed = bits.split("");
+
+  for (let i = 0; i + 2 < transformed.length; i += 3) {
+    transformed[i + 2] =
+      (Number(transformed[i + 2]) ^ (Number(transformed[i]) & Number(transformed[i + 1]))).toString();
+  }
+
+  landmarkCountEl.textContent = "21 / 21";
+  bitCountEl.textContent = "147 / 147";
+  landmarkMatrixEl.textContent = matrix.map(row => "[ " + row.join("  ") + " ]").join("\n");
+  landmarkStatusEl.textContent =
+    "21 landmarks → 7 representative points → 3 × 7 matrix → 147-bit token → reversible mapping.";
+}
+
 function classifyGesture(lm) {
   const wrist = lm[0];
   const indexExtended = distance(lm[8], wrist) > distance(lm[6], wrist) * 1.18;
@@ -471,11 +538,24 @@ async function startCamera() {
 }
 
 function stopCamera() {
+  predictionStarted = false;
+  lastVideoTime = -1;
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
     stream = null;
   }
+  video.pause();
   video.srcObject = null;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  placeholder.hidden = false;
+  if (stopCameraButton) stopCameraButton.disabled = true;
+  if (startButton) {
+    startButton.hidden = false;
+    startButton.disabled = false;
+  }
+  renderLandmarkRepresentation(null);
+  setStatus("Camera stopped", "Camera is off. Your temporal buffer is preserved.", false);
+  confidence.textContent = "Camera stopped.";
 }
 
 function startPredictionLoop() {
@@ -499,7 +579,9 @@ function predict() {
       const result = handLandmarker.detectForVideo(video, performance.now());
       drawHands(result);
 
-      const gesture = result.landmarks?.[0] ? classifyGesture(result.landmarks[0]) : null;
+      const landmarks = result.landmarks?.[0] || null;
+      renderLandmarkRepresentation(landmarks);
+      const gesture = landmarks ? classifyGesture(landmarks) : null;
 
       if (gesture) {
         output.textContent = gesture.text;
@@ -522,6 +604,7 @@ function predict() {
 registerOfflineApp();
 
 startButton.addEventListener("click", startCamera);
+if (stopCameraButton) stopCameraButton.addEventListener("click", stopCamera);
 initializeTemporalControls();
 retryButton.addEventListener("click", startCamera);
 window.addEventListener("beforeunload", stopCamera);
