@@ -44,6 +44,7 @@
       </div>
       <div class="controls">
         <button id="startButton" type="button">Allow Camera & Start</button>
+        <button id="stopCameraButton" class="secondary" type="button" disabled>Stop Camera</button>
         <button id="retryButton" type="button" hidden>Try Camera Again</button>
       </div>
     </section>
@@ -52,6 +53,17 @@
       <p class="eyebrow">CURRENT GESTURE</p>
       <div class="output" id="output">—</div>
       <p class="confidence" id="confidence">Waiting for a gesture…</p>
+    </section>
+
+    <section class="output-card landmark-card" aria-live="polite">
+      <p class="eyebrow">MVP-2A → LANDMARK REPRESENTATION</p>
+      <div class="landmark-stats">
+        <div><strong id="landmarkCount">0 / 21</strong><small>LANDMARKS</small></div>
+        <div><strong id="bitCount">0 / 147</strong><small>COMPACT BITS</small></div>
+      </div>
+      <div class="matrix-label">3 × 7 QUANTIZED MATRIX</div>
+      <pre id="landmarkMatrix" class="landmark-matrix">Waiting for hand landmarks…</pre>
+      <p id="landmarkStatus" class="confidence">2A representation inactive until a hand is detected.</p>
     </section>
 
     <section class="output-card temporal-card" aria-live="polite">
@@ -86,6 +98,6 @@
       <span>Camera-only prototype · No microphone</span>
     </footer>
   </main>
-  <script src="script.js?v=20261005-7" defer></script>
+  <script src="script.js?v=20261006-1" defer></script>
 </body>
 </html>
