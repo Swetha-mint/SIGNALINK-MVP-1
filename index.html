@@ -37,20 +37,21 @@
     </section>
 
     <section class="camera-panel">
-      <div class="camera-frame">
-        <video id="camera" autoplay playsinline muted></video>
+      <div class="camera-frame landmark-view" aria-label="Live hand landmark representation">
+        <video id="camera" autoplay playsinline muted aria-hidden="true"></video>
         <canvas id="overlay"></canvas>
-        <div class="camera-placeholder" id="cameraPlaceholder">Camera feed will appear here.</div>
+        <div class="camera-placeholder" id="cameraPlaceholder">Hand landmark view will appear here.</div>
+        <div class="sensor-label">CAMERA SENSOR · LANDMARK OUTPUT</div>
       </div>
       <div class="controls">
-        <button id="startButton" type="button">Allow Camera & Start</button>
-        <button id="stopCameraButton" class="secondary" type="button" disabled>Stop Camera</button>
-        <button id="retryButton" type="button" hidden>Try Camera Again</button>
+        <button id="startButton" type="button">ALLOW CAMERA & START</button>
+        <button id="stopCameraButton" class="secondary" type="button" disabled>TURN CAMERA OFF</button>
+        <button id="retryButton" type="button" hidden>TRY CAMERA AGAIN</button>
       </div>
     </section>
 
     <section class="output-card" aria-live="polite">
-      <p class="eyebrow">CURRENT GESTURE</p>
+      <p class="eyebrow">PROCESSED HAND INPUT</p>
       <div class="output" id="output">—</div>
       <p class="confidence" id="confidence">Waiting for a gesture…</p>
     </section>
@@ -98,6 +99,6 @@
       <span>Camera-only prototype · No microphone</span>
     </footer>
   </main>
-  <script src="script.js?v=20261006-1" defer></script>
+  <script src="script.js?v=20261008-2" defer></script>
 </body>
 </html>
