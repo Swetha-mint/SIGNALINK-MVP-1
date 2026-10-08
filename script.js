@@ -418,18 +418,58 @@ function classifyGesture(lm) {
   return null;
 }
 
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
 function drawHands(result) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!result?.landmarks) return;
 
-  ctx.fillStyle = "#ff7a00";
+  // The camera remains an input sensor only. The user sees the
+  // processed landmark representation instead of the raw video.
+  ctx.save();
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+
+  if (!result?.landmarks) {
+    ctx.restore();
+    return;
+  }
+
   for (const hand of result.landmarks) {
+    ctx.strokeStyle = "#ff7a00";
+    ctx.lineWidth = Math.max(2, canvas.width / 420);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    for (const [a, b] of HAND_CONNECTIONS) {
+      const p1 = hand[a];
+      const p2 = hand[b];
+      ctx.beginPath();
+      ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+      ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+      ctx.stroke();
+    }
+
     for (const point of hand) {
       ctx.beginPath();
-      ctx.arc(point.x * canvas.width, point.y * canvas.height, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, Math.max(4, canvas.width / 115), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillStyle = "#ff7a00";
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, Math.max(2.2, canvas.width / 190), 0, Math.PI * 2);
       ctx.fill();
     }
   }
+
+  ctx.restore();
 }
 
 async function createHandLandmarker() {
