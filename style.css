@@ -99,3 +99,45 @@ footer{display:flex;justify-content:space-between;gap:16px;margin-top:22px;color
 .landmark-stats small{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.12em}
 .matrix-label{margin-top:18px;color:var(--orange);font-size:11px;font-weight:900;letter-spacing:.14em}
 .landmark-matrix{margin:8px 0 0;padding:14px;overflow:auto;background:var(--black);color:var(--white);font:700 14px/1.7 monospace}
+
+
+/* SIGNALINK processed-input view: camera is a hidden sensor; landmarks are the UI. */
+.landmark-view{
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,122,0,.06), transparent 42%),
+    var(--white);
+  border:2px solid var(--black);
+  min-height:420px;
+}
+.landmark-view video{
+  opacity:0;
+  pointer-events:none;
+}
+.landmark-view canvas{
+  z-index:2;
+}
+.landmark-view .camera-placeholder{
+  z-index:1;
+  color:var(--muted);
+}
+.sensor-label{
+  position:absolute;
+  z-index:3;
+  left:14px;
+  top:14px;
+  padding:7px 10px;
+  background:var(--black);
+  color:var(--white);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.camera-panel .controls{
+  min-height:64px;
+}
+#stopCameraButton:not(:disabled){
+  border:2px solid var(--black);
+}
+@media(max-width:640px){
+  .landmark-view{min-height:330px}
+}
