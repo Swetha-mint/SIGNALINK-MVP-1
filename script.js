@@ -41,6 +41,105 @@ const bitCountEl = document.getElementById("bitCount");
 const landmarkMatrixEl = document.getElementById("landmarkMatrix");
 const landmarkStatusEl = document.getElementById("landmarkStatus");
 
+const bleConnectButton = document.getElementById("bleConnectButton");
+const bleDisconnectButton = document.getElementById("bleDisconnectButton");
+const bleSendButton = document.getElementById("bleSendButton");
+const bleStatusEl = document.getElementById("bleStatus");
+
+// Common HM-10-compatible defaults. Confirm these against the actual module.
+const BLE_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const BLE_CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+let bleDevice = null;
+let bleCharacteristic = null;
+let bleWriteQueue = Promise.resolve();
+
+function updateBleControls() {
+  const connected = Boolean(bleCharacteristic && bleDevice?.gatt?.connected);
+  bleConnectButton.disabled = connected;
+  bleDisconnectButton.disabled = !connected;
+  bleSendButton.disabled = !connected || gestureBuffer.length === 0;
+}
+
+function setBleStatus(message) {
+  bleStatusEl.textContent = message;
+}
+
+async function connectBleDevice() {
+  if (!("bluetooth" in navigator)) {
+    setBleStatus("Web Bluetooth is unavailable in this browser. Try Chrome on Android or desktop Chrome over HTTPS.");
+    return;
+  }
+
+  try {
+    setBleStatus("Choose your BLE UART device in the browser prompt…");
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [BLE_SERVICE_UUID] }]
+    });
+
+    bleDevice.addEventListener("gattserverdisconnected", () => {
+      bleCharacteristic = null;
+      updateBleControls();
+      setBleStatus("BLE device disconnected.");
+    });
+
+    const server = await bleDevice.gatt.connect();
+    const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+    bleCharacteristic = await service.getCharacteristic(BLE_CHARACTERISTIC_UUID);
+
+    if (!bleCharacteristic.properties.write && !bleCharacteristic.properties.writeWithoutResponse) {
+      throw new Error("The selected BLE characteristic does not support writing.");
+    }
+
+    setBleStatus("BLE connected. New recognised gestures will be sent as text.");
+    updateBleControls();
+  } catch (error) {
+    bleCharacteristic = null;
+    updateBleControls();
+    setBleStatus(error?.name === "NotFoundError"
+      ? "No device selected. Check that the module is powered and advertising the configured service."
+      : `BLE connection failed: ${error?.message || String(error)}`);
+  }
+}
+
+async function writeBleText(message) {
+  if (!bleCharacteristic || !bleDevice?.gatt?.connected) {
+    setBleStatus("Gesture recognised, but BLE is not connected. Connect the device to send text.");
+    return;
+  }
+
+  const payload = new TextEncoder().encode(message + "\n");
+  bleWriteQueue = bleWriteQueue.then(async () => {
+    if (bleCharacteristic.properties.write) {
+      await bleCharacteristic.writeValue(payload);
+    } else {
+      await bleCharacteristic.writeValueWithoutResponse(payload);
+    }
+  });
+
+  try {
+    await bleWriteQueue;
+    setBleStatus(`Sent to BLE: ${message}`);
+  } catch (error) {
+    setBleStatus(`BLE send failed: ${error?.message || String(error)}`);
+  }
+}
+
+async function sendCurrentBleMessage() {
+  if (gestureBuffer.length === 0) {
+    setBleStatus("No recognised message to send yet.");
+    return;
+  }
+  await writeBleText(getCommunicationOutput(gestureBuffer));
+}
+
+async function disconnectBleDevice() {
+  if (bleDevice?.gatt?.connected) bleDevice.gatt.disconnect();
+  bleCharacteristic = null;
+  updateBleControls();
+  setBleStatus("BLE disconnected.");
+}
+
+
 function updateOfflineStatus() {
   if (!offlineBadge) return;
 
@@ -106,6 +205,8 @@ function addGesture(gesture) {
   }
 
   renderTemporalLogic();
+  updateBleControls();
+  void writeBleText(gesture);
 }
 
 function processGestureObservation(gesture) {
@@ -177,6 +278,7 @@ function renderTemporalLogic() {
 
   eventCountEl.textContent =
     `${gestureBuffer.length} event${gestureBuffer.length === 1 ? "" : "s"} in buffer`;
+  updateBleControls();
 }
 
 function updateSpeechControls() {
@@ -646,6 +748,10 @@ registerOfflineApp();
 startButton.addEventListener("click", startCamera);
 if (stopCameraButton) stopCameraButton.addEventListener("click", stopCamera);
 initializeTemporalControls();
+bleConnectButton.addEventListener("click", connectBleDevice);
+bleDisconnectButton.addEventListener("click", disconnectBleDevice);
+bleSendButton.addEventListener("click", sendCurrentBleMessage);
+updateBleControls();
 retryButton.addEventListener("click", startCamera);
 window.addEventListener("beforeunload", stopCamera);
 
