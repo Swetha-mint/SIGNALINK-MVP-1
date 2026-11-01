@@ -56,6 +56,19 @@
       <p class="confidence" id="confidence">Waiting for a gesture…</p>
     </section>
 
+    <section class="output-card ble-card" aria-live="polite">
+      <p class="eyebrow">WIRELESS TEXT OUTPUT · BLE</p>
+      <h3 class="ble-heading">Connect SIGNALINK hardware</h3>
+      <p class="confidence">Connect a compatible BLE UART module to send recognised gesture text to the microcontroller and OLED.</p>
+      <div class="ble-controls">
+        <button id="bleConnectButton" type="button">CONNECT BLE DEVICE</button>
+        <button id="bleDisconnectButton" class="secondary" type="button" disabled>DISCONNECT</button>
+        <button id="bleSendButton" class="secondary" type="button" disabled>SEND CURRENT MESSAGE</button>
+      </div>
+      <p id="bleStatus" class="confidence" aria-live="polite">Bluetooth not connected. Tap Connect to choose a device.</p>
+      <p class="ble-note">Default profile: HM-10-style UART (FFE0/FFE1). Your module's actual service and characteristic UUIDs must match this profile.</p>
+    </section>
+
     <section class="output-card landmark-card" aria-live="polite">
       <p class="eyebrow">MVP-2A → LANDMARK REPRESENTATION</p>
       <div class="landmark-stats">
