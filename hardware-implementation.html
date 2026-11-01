@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SIGNALINK MVP-1 hardware implementation, mini-project contributions and enclosure planning.">
+  <meta name="theme-color" content="#111111">
+  <title>SIGNALINK — Hardware Implementation</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20261005-2">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="hardware-page">
+  <main class="app-shell">
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div>
+        <h1>SIGNALINK</h1>
+        <p>Sense. Process. Communicate. Assist.</p>
+      </div>
+      <a class="hardware-link" href="index.html">← BACK TO MVP-1</a>
+      <span class="mvp-tag">HARDWARE</span>
+    </header>
+    <section class="hero">
+      <p class="eyebrow">MVP-1 · HARDWARE IMPLEMENTATION</p>
+      <h2>From gesture to physical output.</h2>
+      <p>This page documents the bounded university mini-project demonstrator: gesture text from the browser MVP, wireless text transfer to a microcontroller and OLED, and a separate audio-amplifier path.</p>
+    </section>
+    <section class="status-card">
+      <span class="tag">SYSTEM BOUNDARY</span>
+      <div><strong>One platform, separate demonstrator</strong><p>This is a hardware implementation record inside SIGNALINK MVP-1. It does not expose private development repositories or claim that planned hardware is already verified.</p></div>
+    </section>
+    <section class="output-card">
+      <p class="eyebrow">SYSTEM ARCHITECTURE</p><h3>Two output paths</h3>
+      <ul>
+        <li><strong>Text path:</strong> Supported gesture → browser-recognised text → BLE UART → ATmega328P → SSD1306 OLED.</li>
+        <li><strong>Audio path:</strong> Browser text-to-speech → phone audio output → analogue audio cable → LM386 amplifier → speaker.</li>
+        <li><strong>NFC role:</strong> Opens the website URL only; it does not carry the recognised text or audio.</li>
+      </ul>
+      <p>Current browser gesture labels are HELLO, STOP and YES. Other messages should not be presented as recognised gestures unless implemented and tested.</p>
+    </section>
+    <section class="output-card">
+      <p class="eyebrow">HARDWARE STACK</p><h3>Prototype components</h3>
+      <ul>
+        <li><strong>Controller:</strong> ATmega328P-PU standalone microcontroller, planned for 3.3 V / 8 MHz operation.</li>
+        <li><strong>Wireless link:</strong> HM-10-compatible BLE UART module; exact module and UUIDs must be verified.</li>
+        <li><strong>Display:</strong> SSD1306 0.96-inch, 128 × 64 I²C OLED.</li>
+        <li><strong>Audio:</strong> LM386 amplifier, audio input connection, speaker and separate amplifier supply.</li>
+        <li><strong>Programming and support:</strong> USBasp ISP programmer, regulated supply, decoupling and wiring.</li>
+      </ul>
+      <p><span class="tag">STATUS: DESIGN / INTEGRATION IN PROGRESS</span></p>
+      <p>These items describe the planned demonstrator architecture; mark a subsystem complete only after its physical test is recorded.</p>
+    </section>
+    <section class="output-card">
+      <p class="eyebrow">TEAM CONTRIBUTIONS</p><h3>Mini-project responsibility map</h3>
+      <div class="contribution-grid">
+        <article class="contribution"><span class="tag">PROJECT LEAD</span><h4>Swetha · SIGNALINK foundation</h4><p>Original project direction, existing browser MVP, website/BLE interface, system architecture, integration coordination and project documentation.</p></article>
+        <article class="contribution"><span class="tag">HARDWARE</span><h4>Kartiki · OLED subsystem</h4><p>OLED subsystem design, component verification, hardware integration and display testing.</p></article>
+        <article class="contribution"><span class="tag">AUDIO ELECTRONICS</span><h4>Sarthi · LM386 amplifier</h4><p>Amplifier circuit, simulation, circuit verification and physical audio-path testing.</p></article>
+        <article class="contribution"><span class="tag">EMBEDDED</span><h4>Ryan · Microcontroller</h4><p>ATmega328P schematic and firmware preparation, BLE communication support and embedded documentation.</p></article>
+      </div>
+      <p>Integration, validation, evidence collection and presentation are shared tasks. Update this record to reflect work actually completed and verified; assigned responsibilities are not automatically proof of completion.</p>
+    </section>
+    <section class="output-card">
+      <p class="eyebrow">ENCLOSURE / 3D PRINTING</p><h3>OLED-first, full-hardware-fit case</h3>
+      <p>The OLED determines the visible display opening, but the outer case must fit the <strong>whole assembled electronics</strong>—not just the screen.</p>
+      <ul>
+        <li>Measure the actual OLED PCB width, height, thickness and active display area; design the bezel/opening around the visible area.</li>
+        <li>Measure the controller/BLE board footprint, component height, wiring bends and mounting-hole positions.</li>
+        <li>Reserve space for the selected power source, switch and any programming/access connector that must remain reachable.</li>
+        <li>Add internal standoffs, screw clearance, wall thickness and print tolerance only after measuring the parts.</li>
+        <li>Print a small fit-check or front-panel prototype before the final enclosure.</li>
+      </ul>
+      <p><strong>Dimension status:</strong> Not frozen yet. “0.96-inch OLED” describes the display class, not the full module or enclosure.</p>
+      <p><span class="tag">NEXT EVIDENCE: MEASUREMENTS + FIT CHECK</span></p>
+    </section>
+    <section class="output-card">
+      <p class="eyebrow">VERIFICATION CHECKLIST</p><h3>Evidence before calling it complete</h3>
+      <ul>
+        <li>BLE connection succeeds with the actual module and matching service/characteristic UUIDs.</li>
+        <li>A test message reaches the microcontroller and appears correctly on the OLED.</li>
+        <li>Phone audio is heard clearly through the LM386 and speaker.</li>
+        <li>Supply voltages, common ground, logic-level compatibility and wiring are checked.</li>
+        <li>Enclosure measurements, internal fit and OLED alignment are documented.</li>
+      </ul>
+    </section>
+    <a class="back-link" href="index.html">← Return to SIGNALINK MVP-1</a>
+    <footer><span>SIGNALINK · Hardware Implementation</span><span>Prototype documentation · Verify each subsystem</span></footer>
+  </main>
+</body>
+</html>
