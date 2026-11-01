@@ -151,3 +151,22 @@ footer{display:flex;justify-content:space-between;gap:16px;margin-top:22px;color
 .ble-controls button:disabled{opacity:.4;cursor:not-allowed}
 .ble-note{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
 @media(max-width:640px){.ble-controls{display:grid;grid-template-columns:1fr}.ble-controls button{width:100%}}
+
+
+/* Hardware implementation page */
+.hardware-link{margin-left:auto;color:var(--ink);font-size:11px;font-weight:900;letter-spacing:.06em;text-decoration:none;border:1px solid var(--line);padding:10px 12px;border-radius:10px}
+.hardware-link:hover{border-color:var(--orange);color:var(--orange)}
+.hardware-page .hero{padding-bottom:18px}
+.hardware-page .output-card{text-align:left;margin-top:14px}
+.hardware-page h3{margin:0 0 10px;font-size:22px}
+.hardware-page p,.hardware-page li{color:var(--muted);line-height:1.6}
+.hardware-page ul{padding-left:20px}
+.hardware-page .status-card{align-items:flex-start}
+.hardware-page .tag{display:inline-block;padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.08em}
+.hardware-page .contribution-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.hardware-page .contribution{border:1px solid var(--line);border-radius:12px;padding:16px;background:rgba(255,255,255,.72)}
+.hardware-page .contribution h4{margin:10px 0 6px}
+.hardware-page .contribution p{margin:0;font-size:13px}
+.hardware-page .back-link{display:inline-block;margin-top:16px;color:var(--ink);font-weight:800;text-decoration:none}
+.hardware-page .back-link:hover{color:var(--orange)}
+@media(max-width:640px){.brand{flex-wrap:wrap}.hardware-link{margin-left:0;order:3}.mvp-tag{margin-left:auto}.hardware-page .contribution-grid{grid-template-columns:1fr}}
